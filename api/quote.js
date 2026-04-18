@@ -24,7 +24,7 @@ export default async function handler(req, res) {
       const d = await r.json();
       return res.status(200).json(d);
     }
-    res.status(400).json({ error: 'invalid type' });
+    return res.status(200).json({ c: d.price, pc: d.prev_close_price });     }     res.status(400).json({ error: 'invalid type' });
   } catch(e) {
     res.status(500).json({ error: e.message });
   }
