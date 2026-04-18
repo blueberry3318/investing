@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -373,27 +374,22 @@
     } catch(e) { console.error('Upbit error', e); }
   }
 
-  // Gold: XAU/USD × USD/KRW ÷ 31.1035
   async function loadGold() {
     try {
-      // Exchange rate USD/KRW via Frankfurter API (free, no key)
-      const fxRes = await fetch('https://api.frankfurter.app/latest?from=USD&to=KRW');
+      const [fxRes, goldRes] = await Promise.all([
+        fetch('https://api.frankfurter.app/latest?from=USD&to=KRW'),
+        fetch('https://finnhub.io/api/v1/quote?symbol=OANDA%3AXAUUSD&token=' + FINNHUB_KEY)
+      ]);
       const fxData = await fxRes.json();
-      const usdKrw = fxData.rates.KRW;
-
-      // Gold price from metals-api alternative: open.er-api.com doesn't have gold
-      // Use gold-api.com free endpoint
-      const goldRes = await fetch('https://api.gold-api.com/price/XAU');
       const goldData = await goldRes.json();
-      const xauUsd = goldData.price; // per troy oz
-
+      const usdKrw = fxData.rates.KRW;
+      const xauUsd = (goldData.c && goldData.c > 0) ? goldData.c : goldData.pc;
+      const chgPct = goldData.pc ? ((xauUsd - goldData.pc) / goldData.pc) * 100 : 0;
       const gramPrice = (xauUsd / 31.1035) * usdKrw;
-      // 24h change from gold-api
-      const chgPct = goldData.prev_close_price
-        ? ((xauUsd - goldData.prev_close_price) / goldData.prev_close_price) * 100
-        : 0;
-
+      document.getElementById('price-GOLD').classList.remove('skeleton');
       setCard('GOLD', fmtKRW(gramPrice) + '/g', chgPct);
+      const subEl = document.getElementById('sub-GOLD');
+      if (subEl) subEl.textContent = 'XAU/USD $' + xauUsd.toFixed(2) + ' · USD/KRW ' + Math.round(usdKrw).toLocaleString();
     } catch(e) {
       console.error('Gold error', e);
       document.getElementById('price-GOLD').textContent = '연동 오류';
@@ -429,25 +425,31 @@
     return { label: '극도의 탐욕', color: '#1db87a' };
   }
 
- const FINNHUB_KEY = 'd7hhf8hr01qhiu0bkveg';
+  // Finnhub stock prices
+  const FINNHUB_KEY = 'd7hhf8hr01qhiu0bkveg';
   async function loadStocks() {
-    const tickers = [{ sym: 'IREN' }, { sym: 'RKLB' }];
+    const tickers = [
+      { sym: 'IREN', display: 'IREN' },
+      { sym: 'RKLB', display: 'RKLB' }
+    ];
     await Promise.all(tickers.map(async ({ sym }) => {
       try {
         const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${sym}&token=${FINNHUB_KEY}`);
         const d = await r.json();
-        if (d.c && d.c > 0) {
-          const chgPct = ((d.c - d.pc) / d.pc) * 100;
-          const priceEl = document.getElementById('price-' + sym);
-          if (priceEl) { priceEl.classList.remove('skeleton'); priceEl.style.fontSize = ''; priceEl.style.color = ''; }
-          setCard(sym, fmtUSD(d.c), chgPct);
-          const subEl = document.getElementById('sub-' + sym);
+        const price = d.c > 0 ? d.c : d.pc;
+        const chgPct = d.pc ? ((price - d.pc) / d.pc) * 100 : 0;
+        const priceEl = document.getElementById('price-' + sym);
+        if (priceEl) { priceEl.classList.remove('skeleton'); priceEl.style.fontSize = ''; priceEl.style.color = ''; }
+        setCard(sym, fmtUSD(price), chgPct);
+        const subEl = document.getElementById('sub-' + sym);
+        if (d.c > 0) {
           if (subEl) subEl.textContent = `고가 $${d.h.toFixed(2)} · 저가 $${d.l.toFixed(2)}`;
         } else {
-          document.getElementById('price-' + sym).textContent = '장 마감';
-          document.getElementById('price-' + sym).style.color = 'var(--text3)';
+          if (subEl) subEl.textContent = '장 마감 · 전일 종가';
         }
-      } catch(e) { document.getElementById('price-' + sym).textContent = '오류'; }
+      } catch(e) {
+        document.getElementById('price-' + sym).textContent = '오류';
+      }
     }));
   }
 
@@ -456,6 +458,11 @@
     btn.innerHTML = '<span class="spin">↻</span> 로딩 중...';
     btn.disabled = true;
     await Promise.all([loadStocks(), loadUpbit(), loadGold(), loadFNG()]);
+    const now = new Date();
+    document.getElementById('last-updated').textContent = '마지막 업데이트: ' + now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    btn.innerHTML = '↻ 새로고침';
+    btn.disabled = false;
+  }
 
   loadAll();
   // Auto-refresh every 60 seconds
