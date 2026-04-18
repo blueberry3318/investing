@@ -3,7 +3,7 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
   const { type, symbol } = req.query;
   const FH = 'd7hi6k1r01qhiu0bn8og';
-  const GOLD_KEY = 'fecdd33123b16d540f362980e5f0342fbfc7d98554e3fbcec4772337f29e140b';
+  const GOLD_KEY = '8568149bba794ebb7bad0dc7b05d68c5fc71c3f3d62cce2c8325cba1e6207b31';
   try {
     if (type === 'upbit') {
       const r = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC,KRW-ETH,KRW-USDT');
