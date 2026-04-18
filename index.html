@@ -176,7 +176,7 @@
   // 금: 업비트 USDT 환율 × Finnhub XAU
   async function loadGold() {
     try {
-      const r = await fetch('/api/quote?type=stock&symbol=OANDA%3AXAUUSD&token=' + FH);
+      const r = await fetch('/api/quote?type=gold);
       const d = await r.json();
       const usdtKrw = window._usdtKrw || 1380;
       if (!d || !d.pc) throw new Error('no gold data');
