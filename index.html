@@ -374,17 +374,19 @@
     } catch(e) { console.error('Upbit error', e); }
   }
 
+  const GOLD_KEY = 'fecdd33123b16d540f362980e5f0342fbfc7d98554e3fbcec4772337f29e140b';
   async function loadGold() {
     try {
       const [fxRes, goldRes] = await Promise.all([
         fetch('https://api.frankfurter.app/latest?from=USD&to=KRW'),
-        fetch('https://finnhub.io/api/v1/quote?symbol=OANDA%3AXAUUSD&token=' + FINNHUB_KEY)
+        fetch('https://www.gold-api.com/price/XAU', { headers: { 'x-access-token': GOLD_KEY } })
       ]);
       const fxData = await fxRes.json();
       const goldData = await goldRes.json();
       const usdKrw = fxData.rates.KRW;
-      const xauUsd = (goldData.c && goldData.c > 0) ? goldData.c : goldData.pc;
-      const chgPct = goldData.pc ? ((xauUsd - goldData.pc) / goldData.pc) * 100 : 0;
+      const xauUsd = goldData.price;
+      const prevClose = goldData.prev_close_price;
+      const chgPct = prevClose ? ((xauUsd - prevClose) / prevClose) * 100 : 0;
       const gramPrice = (xauUsd / 31.1035) * usdKrw;
       document.getElementById('price-GOLD').classList.remove('skeleton');
       setCard('GOLD', fmtKRW(gramPrice) + '/g', chgPct);
@@ -436,8 +438,9 @@
       try {
         const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${sym}&token=${FINNHUB_KEY}`);
         const d = await r.json();
-        const price = d.c > 0 ? d.c : d.pc;
-        const chgPct = d.pc ? ((price - d.pc) / d.pc) * 100 : 0;
+        if (!d || d.c === undefined) throw new Error('no data');
+        const price = (d.c && d.c > 0) ? d.c : d.pc;
+        const chgPct = (d.pc && d.pc > 0) ? ((price - d.pc) / d.pc) * 100 : 0;
         const priceEl = document.getElementById('price-' + sym);
         if (priceEl) { priceEl.classList.remove('skeleton'); priceEl.style.fontSize = ''; priceEl.style.color = ''; }
         setCard(sym, fmtUSD(price), chgPct);
