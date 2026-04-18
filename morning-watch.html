@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morning Watch</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0f;
+    --bg2: #16161a;
+    --bg3: #1e1e24;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text1: #f0ede8;
+    --text2: #8a8890;
+    --text3: #55535f;
+    --up: #2ecc8f;
+    --down: #e05a3a;
+    --neutral: #8a8890;
+    --gold-accent: #c9a84c;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text1);
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+    min-height: 100vh;
+    padding: 2rem 1.5rem;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .logo {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text2);
+  }
+
+  .header-right {
+    text-align: right;
+  }
+
+  #clock {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text1);
+    font-variant-numeric: tabular-nums;
+  }
+
+  #date-str {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 2px;
+    letter-spacing: 0.04em;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 10px;
+    margin-top: 1.75rem;
+  }
+
+  .section-label:first-of-type { margin-top: 0; }
+
+  .cards {
+    display: grid;
+    gap: 8px;
+  }
+
+  .card {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 14px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .card:hover {
+    border-color: var(--border2);
+    background: var(--bg3);
+  }
+
+  .card-left { display: flex; flex-direction: column; gap: 3px; }
+
+  .card-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text1);
+  }
+
+  .card-meta {
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.03em;
+  }
+
+  .card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+
+  .card-price {
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--text1);
+  }
+
+  .card-change {
+    font-size: 12px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .up { color: var(--up); }
+  .down { color: var(--down); }
+  .neutral { color: var(--neutral); }
+
+  .skeleton { color: var(--text3) !important; }
+
+  /* Fear & Greed */
+  .fng-card {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 14px;
+    padding: 1.1rem 1.2rem;
+  }
+
+  .fng-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .fng-left { display: flex; flex-direction: column; gap: 3px; }
+  .fng-name { font-size: 15px; font-weight: 500; }
+  .fng-meta { font-size: 11px; color: var(--text3); }
+
+  .fng-right { display: flex; align-items: baseline; gap: 8px; }
+  .fng-score { font-size: 28px; font-weight: 300; font-variant-numeric: tabular-nums; }
+  .fng-word { font-size: 12px; font-weight: 500; }
+
+  .bar-bg {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--bg3);
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .fng-scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: var(--text3);
+    letter-spacing: 0.04em;
+  }
+
+  /* Refresh */
+  .refresh-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+  }
+
+  #last-updated { font-size: 11px; color: var(--text3); }
+
+  .refresh-btn {
+    font-size: 12px;
+    color: var(--text2);
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .refresh-btn:hover { border-color: var(--border2); color: var(--text1); }
+
+  .spin { animation: spin 1s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .disclaimer {
+    margin-top: 1.75rem;
+    font-size: 10px;
+    color: var(--text3);
+    line-height: 1.6;
+    padding-top: 1rem;
+    border-top: 0.5px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Morning Watch</div>
+  <div class="header-right">
+    <div id="clock">--:--:--</div>
+    <div id="date-str">--</div>
+  </div>
+</header>
+
+<div class="section-label">주식 · USD</div>
+<div class="cards">
+  <a class="card" href="https://finance.yahoo.com/quote/IREN" target="_blank">
+    <div class="card-left">
+      <div class="card-name">IREN Limited</div>
+      <div class="card-meta">NASDAQ · IREN</div>
+    </div>
+    <div class="card-right">
+      <div class="card-price skeleton" id="price-IREN">$--.-</div>
+      <div class="card-change neutral" id="change-IREN">--.-- %</div>
+    </div>
+  </a>
+  <a class="card" href="https://finance.yahoo.com/quote/RKLB" target="_blank">
+    <div class="card-left">
+      <div class="card-name">Rocket Lab</div>
+      <div class="card-meta">NASDAQ · RKLB</div>
+    </div>
+    <div class="card-right">
+      <div class="card-price skeleton" id="price-RKLB">$--.-</div>
+      <div class="card-change neutral" id="change-RKLB">--.-- %</div>
+    </div>
+  </a>
+</div>
+
+<div class="section-label">암호화폐 · KRW (업비트)</div>
+<div class="cards">
+  <a class="card" href="https://upbit.com/exchange?code=CRIX.UPBIT.KRW-BTC" target="_blank">
+    <div class="card-left">
+      <div class="card-name">비트코인</div>
+      <div class="card-meta">업비트 · BTC/KRW</div>
+    </div>
+    <div class="card-right">
+      <div class="card-price skeleton" id="price-BTC">₩--</div>
+      <div class="card-change neutral" id="change-BTC">--.-- %</div>
+    </div>
+  </a>
+  <a class="card" href="https://upbit.com/exchange?code=CRIX.UPBIT.KRW-ETH" target="_blank">
+    <div class="card-left">
+      <div class="card-name">이더리움</div>
+      <div class="card-meta">업비트 · ETH/KRW</div>
+    </div>
+    <div class="card-right">
+      <div class="card-price skeleton" id="price-ETH">₩--</div>
+      <div class="card-change neutral" id="change-ETH">--.-- %</div>
+    </div>
+  </a>
+</div>
+
+<div class="section-label">금 · KRW</div>
+<div class="cards">
+  <a class="card" href="https://finance.naver.com/item/main.nhn?code=132030" target="_blank">
+    <div class="card-left">
+      <div class="card-name">금 현물</div>
+      <div class="card-meta">국제시세 × 환율 환산 · g당</div>
+    </div>
+    <div class="card-right">
+      <div class="card-price skeleton" id="price-GOLD">₩--</div>
+      <div class="card-change neutral" id="change-GOLD">--.-- %</div>
+    </div>
+  </a>
+</div>
+
+<div class="section-label">시장 심리</div>
+<div class="fng-card">
+  <div class="fng-top">
+    <div class="fng-left">
+      <div class="fng-name">공포 &amp; 탐욕 지수</div>
+      <div class="fng-meta">CNN · 크립토 기준</div>
+    </div>
+    <div class="fng-right">
+      <div class="fng-score neutral" id="fng-score">--</div>
+      <div class="fng-word neutral" id="fng-word">--</div>
+    </div>
+  </div>
+  <div class="bar-bg">
+    <div class="bar-fill" id="fng-bar" style="width:0%; background:var(--neutral)"></div>
+  </div>
+  <div class="fng-scale">
+    <span>극도 공포</span>
+    <span>공포</span>
+    <span>중립</span>
+    <span>탐욕</span>
+    <span>극도 탐욕</span>
+  </div>
+</div>
+
+<div class="refresh-row">
+  <div id="last-updated">마지막 업데이트: --</div>
+  <button class="refresh-btn" id="refresh-btn" onclick="loadAll()">↻ 새로고침</button>
+</div>
+
+<div class="disclaimer">
+  * 주식(IREN, RKLB) 가격은 Yahoo Finance 연동이 브라우저 보안 정책으로 제한되어 직접 표시가 어렵습니다. 카드를 클릭하면 Yahoo Finance로 이동합니다.<br>
+  * 금 가격은 국제 현물가(XAU/USD) × USD/KRW 환율을 트로이온스(31.1035g)로 나눈 그램당 환산가입니다. KRX 거래소 공식가와 소폭 차이가 있을 수 있습니다.<br>
+  * 업비트 가격은 실시간 API 기준입니다.
+</div>
+
+<script>
+  // Clock
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    document.getElementById('date-str').textContent = now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // Formatting
+  function fmtKRW(v) {
+    return '₩' + Math.round(v).toLocaleString('ko-KR');
+  }
+  function fmtUSD(v) {
+    return '$' + parseFloat(v).toFixed(2);
+  }
+  function fmtChg(pct) {
+    const v = parseFloat(pct);
+    return (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
+  }
+  function setCard(id, price, changePct) {
+    const priceEl = document.getElementById('price-' + id);
+    const changeEl = document.getElementById('change-' + id);
+    if (!priceEl) return;
+    priceEl.classList.remove('skeleton');
+    priceEl.textContent = price;
+    const v = parseFloat(changePct);
+    changeEl.textContent = fmtChg(changePct);
+    changeEl.className = 'card-change ' + (v > 0 ? 'up' : v < 0 ? 'down' : 'neutral');
+  }
+
+  // Upbit
+  async function loadUpbit() {
+    try {
+      const r = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC,KRW-ETH');
+      const data = await r.json();
+      data.forEach(d => {
+        const sym = d.market.replace('KRW-', '');
+        const chg = d.signed_change_rate * 100;
+        setCard(sym, fmtKRW(d.trade_price), chg);
+      });
+    } catch(e) { console.error('Upbit error', e); }
+  }
+
+  // Gold: XAU/USD × USD/KRW ÷ 31.1035
+  async function loadGold() {
+    try {
+      // Exchange rate USD/KRW via Frankfurter API (free, no key)
+      const fxRes = await fetch('https://api.frankfurter.app/latest?from=USD&to=KRW');
+      const fxData = await fxRes.json();
+      const usdKrw = fxData.rates.KRW;
+
+      // Gold price from metals-api alternative: open.er-api.com doesn't have gold
+      // Use gold-api.com free endpoint
+      const goldRes = await fetch('https://api.gold-api.com/price/XAU');
+      const goldData = await goldRes.json();
+      const xauUsd = goldData.price; // per troy oz
+
+      const gramPrice = (xauUsd / 31.1035) * usdKrw;
+      // 24h change from gold-api
+      const chgPct = goldData.prev_close_price
+        ? ((xauUsd - goldData.prev_close_price) / goldData.prev_close_price) * 100
+        : 0;
+
+      setCard('GOLD', fmtKRW(gramPrice) + '/g', chgPct);
+    } catch(e) {
+      console.error('Gold error', e);
+      document.getElementById('price-GOLD').textContent = '연동 오류';
+    }
+  }
+
+  // Fear & Greed
+  async function loadFNG() {
+    try {
+      const r = await fetch('https://api.alternative.me/fng/?limit=1');
+      const d = await r.json();
+      const val = parseInt(d.data[0].value);
+      const scoreEl = document.getElementById('fng-score');
+      const wordEl = document.getElementById('fng-word');
+      const bar = document.getElementById('fng-bar');
+      scoreEl.textContent = val;
+      const info = fngInfo(val);
+      wordEl.textContent = info.label;
+      scoreEl.className = 'fng-score';
+      wordEl.className = 'fng-word';
+      scoreEl.style.color = info.color;
+      wordEl.style.color = info.color;
+      bar.style.width = val + '%';
+      bar.style.background = info.color;
+    } catch(e) { console.error('FNG error', e); }
+  }
+
+  function fngInfo(v) {
+    if (v <= 25) return { label: '극도의 공포', color: '#e05a3a' };
+    if (v <= 45) return { label: '공포', color: '#e09a3a' };
+    if (v <= 55) return { label: '중립', color: '#8a8890' };
+    if (v <= 75) return { label: '탐욕', color: '#2ecc8f' };
+    return { label: '극도의 탐욕', color: '#1db87a' };
+  }
+
+  // Stock prices: Yahoo Finance blocks CORS, so we show a note
+  function setStockNote() {
+    ['IREN', 'RKLB'].forEach(sym => {
+      const el = document.getElementById('price-' + sym);
+      if (el) {
+        el.textContent = '클릭 →';
+        el.style.fontSize = '13px';
+        el.style.color = 'var(--text3)';
+      }
+      const chg = document.getElementById('change-' + sym);
+      if (chg) { chg.textContent = 'Yahoo Finance'; chg.style.color = 'var(--text3)'; }
+    });
+  }
+
+  async function loadAll() {
+    const btn = document.getElementById('refresh-btn');
+    btn.innerHTML = '<span class="spin">↻</span> 로딩 중...';
+    btn.disabled = true;
+    setStockNote();
+    await Promise.all([loadUpbit(), loadGold(), loadFNG()]);
+    const now = new Date();
+    document.getElementById('last-updated').textContent = '마지막 업데이트: ' + now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    btn.innerHTML = '↻ 새로고침';
+    btn.disabled = false;
+  }
+
+  loadAll();
+  // Auto-refresh every 60 seconds
+  setInterval(loadAll, 60000);
+</script>
+</body>
+</html>
