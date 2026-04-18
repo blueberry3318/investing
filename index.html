@@ -429,31 +429,33 @@
     return { label: '극도의 탐욕', color: '#1db87a' };
   }
 
-  // Stock prices: Yahoo Finance blocks CORS, so we show a note
-  function setStockNote() {
-    ['IREN', 'RKLB'].forEach(sym => {
-      const el = document.getElementById('price-' + sym);
-      if (el) {
-        el.textContent = '클릭 →';
-        el.style.fontSize = '13px';
-        el.style.color = 'var(--text3)';
-      }
-      const chg = document.getElementById('change-' + sym);
-      if (chg) { chg.textContent = 'Yahoo Finance'; chg.style.color = 'var(--text3)'; }
-    });
+ const FINNHUB_KEY = 'd7hhf8hr01qhiu0bkveg';
+  async function loadStocks() {
+    const tickers = [{ sym: 'IREN' }, { sym: 'RKLB' }];
+    await Promise.all(tickers.map(async ({ sym }) => {
+      try {
+        const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${sym}&token=${FINNHUB_KEY}`);
+        const d = await r.json();
+        if (d.c && d.c > 0) {
+          const chgPct = ((d.c - d.pc) / d.pc) * 100;
+          const priceEl = document.getElementById('price-' + sym);
+          if (priceEl) { priceEl.classList.remove('skeleton'); priceEl.style.fontSize = ''; priceEl.style.color = ''; }
+          setCard(sym, fmtUSD(d.c), chgPct);
+          const subEl = document.getElementById('sub-' + sym);
+          if (subEl) subEl.textContent = `고가 $${d.h.toFixed(2)} · 저가 $${d.l.toFixed(2)}`;
+        } else {
+          document.getElementById('price-' + sym).textContent = '장 마감';
+          document.getElementById('price-' + sym).style.color = 'var(--text3)';
+        }
+      } catch(e) { document.getElementById('price-' + sym).textContent = '오류'; }
+    }));
   }
 
   async function loadAll() {
     const btn = document.getElementById('refresh-btn');
     btn.innerHTML = '<span class="spin">↻</span> 로딩 중...';
     btn.disabled = true;
-    setStockNote();
-    await Promise.all([loadUpbit(), loadGold(), loadFNG()]);
-    const now = new Date();
-    document.getElementById('last-updated').textContent = '마지막 업데이트: ' + now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    btn.innerHTML = '↻ 새로고침';
-    btn.disabled = false;
-  }
+    await Promise.all([loadStocks(), loadUpbit(), loadGold(), loadFNG()]);
 
   loadAll();
   // Auto-refresh every 60 seconds
