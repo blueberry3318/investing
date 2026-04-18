@@ -153,7 +153,7 @@
   }
 
   // Finnhub: 주식 + 금
-  const FH = 'd7hhf8hr01qhiu0bkveg';
+  const FH = 'd7hi6k1r01qhiu0bn8og';
   async function loadFinnhub() {
     const syms = ['IREN', 'RKLB'];
     await Promise.all(syms.map(async sym => {
@@ -176,7 +176,7 @@
   // 금: 업비트 USDT 환율 × Finnhub XAU
   async function loadGold() {
     try {
-      const r = await fetch('https://finnhub.io/api/v1/quote?symbol=OANDA:XAUUSD&token=' + FH);
+      const r = await fetch('https://finnhub.io/api/v1/quote?symbol=OANDA%3AXAUUSD&token=' + FH);
       const d = await r.json();
       const usdtKrw = window._usdtKrw || 1380;
       if (!d || !d.pc) throw new Error('no gold data');
