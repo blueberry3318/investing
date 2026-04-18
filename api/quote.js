@@ -20,7 +20,7 @@ export default async function handler(req, res) {
       return res.status(200).json(d);
     }
     if (type === 'gold') {
-      const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=GC1!&token=${FH}`);
+      const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=XAU&token=${FH}`);
       const d = await r.json();
       return res.status(200).json(d);
     }
