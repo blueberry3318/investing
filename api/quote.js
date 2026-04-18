@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     if (type === 'gold') {
       const r = await fetch('https://www.gold-api.com/price/XAU', { headers: { 'x-access-token': GOLD_KEY } });
       const d = await r.json();
-      return res.status(200).json({ c: d.price, pc: d.prev_close_price });
+      return res.status(200).json(d);
     }
     return res.status(400).json({ error: 'invalid type' });
   } catch(e) {
