@@ -20,7 +20,7 @@ export default async function handler(req, res) {
       return res.status(200).json(d);
     }
     if (type === 'gold') {
-      const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=XAU&token=${FH}`);
+      const r = await fetch(`https://www.gold-api.com/price/XAU', { headers: { 'x-access-token': 'fecdd33123b16d540f362980e5f0342fbfc7d98554e3fbcec4772337f29e140b' } }`);
       const d = await r.json();
       return res.status(200).json(d);
     }
