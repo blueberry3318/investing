@@ -158,7 +158,7 @@
     const syms = ['IREN', 'RKLB'];
     await Promise.all(syms.map(async sym => {
       try {
-        const r = await fetch('/api/quote?symbol=' + sym + '&token=' + FH);
+        const r = await fetch('/api/quote?type=stock&symbol=' + sym + '&token=' + FH);
         const d = await r.json();
         if (!d || !d.pc) { document.getElementById('price-' + sym).textContent = '장외'; return; }
         const price = (d.c && d.c > 0) ? d.c : d.pc;
@@ -176,7 +176,7 @@
   // 금: 업비트 USDT 환율 × Finnhub XAU
   async function loadGold() {
     try {
-      const r = await fetch('/api/quote?symbol=OANDA%3AXAUUSD&token=' + FH);
+      const r = await fetch('/api/quote?type=stock&symbol=OANDA%3AXAUUSD&token=' + FH);
       const d = await r.json();
       const usdtKrw = window._usdtKrw || 1380;
       if (!d || !d.pc) throw new Error('no gold data');
